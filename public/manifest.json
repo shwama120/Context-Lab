@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "Context-Lab: 지능형 계정 관리자",
+  "version": "1.0.0",
+  "description": "LLM 기반 웹 브라우징 맥락 분석 및 자동 인덱싱 플랫폼",
+  "permissions": [
+    "storage",
+    "activeTab",
+    "scripting"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "action": {
+    "default_popup": "index.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["src/content.ts"]
+    }
+  ]
+}
