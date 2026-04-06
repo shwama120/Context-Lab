@@ -1,120 +1,107 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useEffect, useState } from 'react'
+
+// 데이터 구조 정의 (TypeScript 타입 안전성 확보)
+interface Log {
+  id: number;
+  title: string;
+  url: string;
+  description: string;
+  timestamp: string;
+}
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [logs, setLogs] = useState<Log[]>([]);
+
+  useEffect(() => {
+    // 1. 팝업이 열릴 때 크롬 로컬 저장소에서 데이터 호출
+    chrome.storage.local.get(['contextLogs'], (result) => {
+      // result.contextLogs가 없으면 빈 배열 사용, 명시적으로 Log[] 타입임을 선언하여 에러 방지
+      const savedLogs = (result.contextLogs || []) as Log[];
+      
+      // 2. 최신 가입 정보가 위로 오도록 역순 정렬하여 상태 업데이트
+      setLogs([...savedLogs].reverse());
+    });
+  }, []);
+
+  // 저장된 모든 기록 삭제 함수
+  const clearLogs = () => {
+    chrome.storage.local.set({ contextLogs: [] }, () => {
+      setLogs([]);
+    });
+  };
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
+    <div style={{ width: '350px', padding: '15px', fontFamily: 'sans-serif', backgroundColor: '#fff' }}>
+      <h2 style={{ 
+        color: '#2563eb', 
+        fontSize: '1.2rem', 
+        borderBottom: '2px solid #f3f4f6', 
+        paddingBottom: '10px',
+        margin: '0 0 15px 0'
+      }}>
+        Context-Lab 인덱스
+      </h2>
+      
+      <div style={{ maxHeight: '400px', overflowY: 'auto', paddingRight: '5px' }}>
+        {logs.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '40px 0', color: '#9ca3af' }}>
+            <p>아직 감지된 맥락이 없습니다.</p>
+            <p style={{ fontSize: '0.8rem' }}>웹사이트에서 가입/로그인을 시도해보세요!</p>
+          </div>
+        ) : (
+          logs.map((log) => (
+            <div key={log.id} style={{ 
+              border: '1px solid #e5e7eb', 
+              borderRadius: '10px', 
+              padding: '12px', 
+              marginBottom: '10px',
+              backgroundColor: '#f9fafb',
+              boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
+            }}>
+              <strong style={{ display: 'block', fontSize: '14px', color: '#111827', marginBottom: '4px' }}>
+                {log.title}
+              </strong>
+              <a 
+                href={log.url} 
+                target="_blank" 
+                rel="noreferrer"
+                style={{ fontSize: '12px', color: '#3b82f6', textDecoration: 'none', fontWeight: '500' }}
+              >
+                사이트 주소 확인 →
+              </a>
+              <p style={{ fontSize: '11px', color: '#4b5563', margin: '8px 0', lineHeight: '1.4' }}>
+                {log.description}
+              </p>
+              <div style={{ fontSize: '10px', color: '#9ca3af', marginTop: '8px', textAlign: 'right' }}>
+                📅 {log.timestamp}
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {logs.length > 0 && (
+        <button 
+          onClick={clearLogs}
+          style={{ 
+            width: '100%', 
+            padding: '10px', 
+            marginTop: '15px', 
+            backgroundColor: '#ef4444', 
+            color: 'white', 
+            border: 'none', 
+            borderRadius: '6px',
+            cursor: 'pointer',
+            fontWeight: 'bold',
+            transition: 'background-color 0.2s'
+          }}
+          onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#dc2626')}
+          onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#ef4444')}
         >
-          Count is {count}
+          데이터 초기화
         </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+      )}
+    </div>
   )
 }
 

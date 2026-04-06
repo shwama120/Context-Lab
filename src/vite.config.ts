@@ -7,13 +7,11 @@ export default defineConfig({
   build: {
     rollupOptions: {
       input: {
-        // 1. 팝업 페이지 (기본)
         main: resolve(__dirname, 'index.html'),
-        // 2. 가입 감지 엔진 (이게 있어야 content.js가 생깁니다!)
         content: resolve(__dirname, 'src/content.ts'),
       },
       output: {
-        // 파일 이름에 이상한 문자(해시)가 붙지 않게 고정
+        // 해시값 없이 깔끔하게 이름을 고정합니다.
         entryFileNames: `assets/[name].js`,
         chunkFileNames: `assets/[name].js`,
         assetFileNames: `assets/[name].[ext]`
